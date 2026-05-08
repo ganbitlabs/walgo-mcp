@@ -112,113 +112,246 @@ const LANDING_HTML = `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0f14" />
   <title>walgo-mcp — agent bridge for Walrus Sites</title>
   <meta name="description" content="Hosted MCP that lets agents (Claude Code, Cursor, Codex…) build, deploy, and manage walgo sites through a paired browser tab." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500&family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    :root { color-scheme: light dark; }
+    :root {
+      color-scheme: dark;
+      --bg: #0a0f14;
+      --card: linear-gradient(145deg, rgba(17,22,29,0.9), rgba(10,15,20,0.95));
+      --code-bg: rgba(0,0,0,0.45);
+      --text: #e0e6ed;
+      --muted: #94a3b8;
+      --dim: rgba(148,163,184,0.55);
+      --border: rgba(255,255,255,0.08);
+      --border-strong: rgba(255,255,255,0.14);
+      --accent: #4da2ff;
+      --accent-dim: rgba(77,162,255,0.10);
+      --accent-border: rgba(77,162,255,0.30);
+    }
     *,*::before,*::after { box-sizing: border-box; }
+    html, body { background: var(--bg); color: var(--text); }
     body {
-      font: 15px/1.55 -apple-system, system-ui, "Segoe UI", sans-serif;
-      max-width: 720px;
-      margin: 6vh auto;
-      padding: 0 24px;
-      color: #1a2330;
-      background: #fafbfc;
-    }
-    @media (prefers-color-scheme: dark) {
-      body { color: #e6f1ff; background: #0a0f14; }
-      pre, code { background: #11181f; color: #e6f1ff; border-color: #1f2a36; }
-      a { color: #4da2ff; }
-      .card { background: #11181f; border-color: #1f2a36; }
-      hr { border-color: #1f2a36; }
-    }
-    h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: -0.01em; }
-    h2 { font-size: 15px; text-transform: uppercase; letter-spacing: 0.18em; color: #6b7a8a; margin-top: 32px; }
-    p { color: #475569; margin: 8px 0; }
-    @media (prefers-color-scheme: dark) { p { color: #94a3b8; } }
-    a { color: #2563eb; }
-    code { background: #f1f5f9; padding: 1.5px 5px; border-radius: 3px; font-size: 13px; border: 1px solid transparent; }
-    pre {
-      background: #f1f5f9;
-      padding: 12px 14px;
-      border-radius: 5px;
-      overflow-x: auto;
-      font-size: 13px;
-      border: 1px solid #e2e8f0;
+      font-family: 'Barlow', -apple-system, system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      margin: 0;
+      min-height: 100vh;
       position: relative;
+      -webkit-font-smoothing: antialiased;
     }
-    pre code { background: transparent; padding: 0; border: 0; font-size: 13px; }
-    .card { border: 1px solid #e2e8f0; border-radius: 6px; padding: 14px 16px; background: #fff; margin: 10px 0; }
-    .pill { display: inline-block; font-size: 11px; font-family: monospace; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 8px; border-radius: 12px; background: #4da2ff15; color: #2563eb; border: 1px solid #4da2ff40; }
-    button.copy {
-      position: absolute; top: 8px; right: 8px; font: inherit; font-size: 11px;
-      padding: 3px 8px; border: 1px solid #cbd5e1; border-radius: 3px; background: #fff;
-      cursor: pointer; opacity: 0.7; transition: opacity 0.1s;
+    .grid-bg {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(77,162,255,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(77,162,255,0.035) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse at top, rgba(0,0,0,0.7), transparent 70%);
     }
-    button.copy:hover { opacity: 1; }
-    @media (prefers-color-scheme: dark) {
-      button.copy { background: #1f2a36; color: #e6f1ff; border-color: #334155; }
+    .container {
+      position: relative; z-index: 1;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 64px 24px 96px;
     }
-    hr { border: 0; border-top: 1px solid #e2e8f0; margin: 28px 0; }
-    .muted { color: #94a3b8; font-size: 13px; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--accent);
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--accent-border);
+      background: var(--accent-dim);
+    }
+    .pill::before {
+      content: ""; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent); box-shadow: 0 0 10px var(--accent);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 50% { opacity: 0.5; } }
+    h1 {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 44px;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin: 16px 0 14px;
+      color: #fff;
+    }
+    h1 .accent { color: var(--accent); }
+    h2 {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 500;
+      margin: 40px 0 12px;
+    }
+    .lede {
+      color: var(--muted);
+      max-width: 580px;
+      margin: 0 0 8px;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      background: var(--code-bg);
+      padding: 1.5px 6px;
+      border-radius: 3px;
+      color: var(--text);
+    }
+    .panel {
+      background: var(--card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 20px 22px;
+      margin: 12px 0;
+      transition: border-color 0.15s;
+    }
+    .panel:hover { border-color: var(--border-strong); }
+    .panel-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--text); font-weight: 500;
+      margin: 0 0 10px;
+    }
+    .panel-title .meta { color: var(--dim); font-weight: 400; text-transform: none; letter-spacing: 0.02em; }
+    .codeblock {
+      position: relative;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.55;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 14px 64px 14px 16px;
+      color: var(--accent);
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .codeblock.muted-text { color: var(--text); }
+    .codeblock.large { padding: 20px 80px 20px 22px; font-size: 14px; }
+    .copy {
+      position: absolute; top: 8px; right: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
+      padding: 4px 9px;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      background: rgba(255,255,255,0.02);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .copy:hover { color: var(--accent); border-color: var(--accent-border); background: var(--accent-dim); }
+    .copy.copied { color: #34d399; border-color: rgba(52,211,153,0.35); background: rgba(52,211,153,0.08); }
+    .footer {
+      margin-top: 56px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--muted);
+      display: flex; flex-wrap: wrap; gap: 18px;
+    }
+    .footer a { color: var(--muted); }
+    .footer a:hover { color: var(--accent); }
+    .hint { color: var(--dim); font-size: 13px; margin: -4px 0 12px; }
+    .corner {
+      position: absolute;
+      width: 8px; height: 8px;
+      border-color: var(--border-strong);
+      border-style: solid;
+      border-width: 0;
+    }
+    .panel { position: relative; }
+    .panel .corner.tl { top: -1px; left: -1px; border-top-width: 1px; border-left-width: 1px; }
+    .panel .corner.tr { top: -1px; right: -1px; border-top-width: 1px; border-right-width: 1px; }
+    .panel .corner.bl { bottom: -1px; left: -1px; border-bottom-width: 1px; border-left-width: 1px; }
+    .panel .corner.br { bottom: -1px; right: -1px; border-bottom-width: 1px; border-right-width: 1px; }
+    @media (max-width: 560px) {
+      .container { padding: 40px 18px 64px; }
+      h1 { font-size: 34px; }
+      .codeblock { font-size: 12px; padding-right: 56px; }
+      .copy { font-size: 8px; padding: 3px 7px; }
+    }
   </style>
 </head>
 <body>
-  <p><span class="pill">walgo-mcp</span></p>
-  <h1>Agent bridge for Walrus Sites</h1>
-  <p>Hosted MCP that lets your agent (Claude Code, Cursor, Codex…) build, deploy, edit, and link walgo sites end-to-end. Your wallet stays in <a href="https://web.walgo.xyz">web.walgo.xyz</a>; every chain tx is signed there.</p>
+  <div class="grid-bg"></div>
+  <main class="container">
+    <span class="pill">walgo-mcp</span>
+    <h1>Agent bridge for <span class="accent">Walrus</span> sites</h1>
+    <p class="lede">Hosted MCP that lets your agent (Claude Code, Cursor, Codex…) build, deploy, edit, and link walgo sites end-to-end. Your wallet stays in <a href="https://web.walgo.xyz">web.walgo.xyz</a>; every chain transaction is signed there.</p>
 
-  <h2>One-liner install</h2>
-  <p class="muted">Drops the walgo skill in <code>~/.claude/skills/walgo</code> and registers the MCP with Claude Code (if installed).</p>
-  <pre><code>curl -fsSL https://mcp.walgo.xyz/install.sh | bash</code><button class="copy">Copy</button></pre>
+    <h2>One-liner install</h2>
+    <p class="hint">Drops the walgo skill at <code>~/.claude/skills/walgo</code> and registers the MCP with Claude Code if it's installed.</p>
+    <div class="codeblock large"><code>curl -fsSL https://mcp.walgo.xyz/install.sh | bash</code><button class="copy" data-copy>Copy</button></div>
 
-  <h2>Or set it up by hand</h2>
+    <h2>Or wire it up by hand</h2>
 
-  <div class="card">
-    <p><strong>Claude Code</strong></p>
-    <pre><code>claude mcp add walgo --transport http https://mcp.walgo.xyz/mcp</code><button class="copy">Copy</button></pre>
-  </div>
+    <div class="panel">
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+      <p class="panel-title">Claude Code</p>
+      <div class="codeblock"><code>claude mcp add walgo --transport http https://mcp.walgo.xyz/mcp</code><button class="copy" data-copy>Copy</button></div>
+    </div>
 
-  <div class="card">
-    <p><strong>Cursor</strong> — Settings → MCP → Add Server</p>
-    <pre><code>{
+    <div class="panel">
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+      <p class="panel-title">Cursor <span class="meta">— Settings → MCP → Add Server</span></p>
+      <div class="codeblock muted-text"><code>{
   "name": "walgo",
   "transport": "http",
   "url": "https://mcp.walgo.xyz/mcp"
-}</code><button class="copy">Copy</button></pre>
-  </div>
+}</code><button class="copy" data-copy>Copy</button></div>
+    </div>
 
-  <div class="card">
-    <p><strong>Codex / Continue / others</strong> — point at this Streamable HTTP URL:</p>
-    <pre><code>https://mcp.walgo.xyz/mcp</code><button class="copy">Copy</button></pre>
-  </div>
+    <div class="panel">
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+      <p class="panel-title">Codex / Continue / others <span class="meta">— Streamable HTTP URL</span></p>
+      <div class="codeblock"><code>https://mcp.walgo.xyz/mcp</code><button class="copy" data-copy>Copy</button></div>
+    </div>
 
-  <h2>Bootstrap prompt</h2>
-  <p>Paste this into any agent that already has the MCP configured. Tells it the playbook lives at <code>/skill.md</code>.</p>
-  <pre id="prompt"><code></code><button class="copy">Copy</button></pre>
+    <h2>Bootstrap prompt</h2>
+    <p class="hint">Paste into any agent that already has the MCP configured. Points it at the playbook at <code>/skill.md</code>.</p>
+    <div class="codeblock muted-text" id="prompt-box"><code id="prompt-text">loading…</code><button class="copy" data-copy>Copy</button></div>
 
-  <h2>How pairing works</h2>
-  <p>Call <code>walgo_pair</code>. The response gives you a <code>deepLink</code> like <code>https://web.walgo.xyz/pair/&lt;code&gt;</code> and an 8-digit <code>code</code>. Open the link (or paste the code) in the wallet-connected tab. The agent's tool calls then route through your paired browser, which signs every chain tx with your wallet.</p>
+    <h2>How pairing works</h2>
+    <p class="hint">Call <code>walgo_pair</code> from your agent. The response includes a <code>deepLink</code> like <code>https://web.walgo.xyz/pair/&lt;code&gt;</code> and an 8-digit <code>code</code>. Open the link (or paste the code) in the wallet-connected browser tab. After that, every tool call routes through your paired browser, where your wallet signs each chain transaction.</p>
 
-  <hr />
+    <div class="footer">
+      <a href="https://github.com/ganbitlabs/walgo-mcp">github / source</a>
+      <a href="/skill.md">/skill.md</a>
+      <a href="/prompt">/prompt</a>
+      <a href="https://walgo.xyz">walgo.xyz</a>
+    </div>
+  </main>
 
-  <p class="muted">
-    Source: <a href="https://github.com/ganbitlabs/walgo-mcp">github.com/ganbitlabs/walgo-mcp</a>
-    · Skill (raw): <a href="/skill.md">/skill.md</a>
-    · Bootstrap prompt: <a href="/prompt">/prompt</a>
-  </p>
-<script>
-fetch("/prompt").then(r => r.text()).then(t => { document.querySelector("#prompt code").textContent = t; });
-document.querySelectorAll("button.copy").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const code = btn.previousElementSibling.textContent;
-    navigator.clipboard.writeText(code);
-    const old = btn.textContent;
-    btn.textContent = "Copied";
-    setTimeout(() => btn.textContent = old, 1200);
-  });
-});
-</script>
+  <script>
+    fetch("/prompt")
+      .then(r => r.text())
+      .then(t => { document.getElementById("prompt-text").textContent = t.trimEnd(); })
+      .catch(() => { document.getElementById("prompt-text").textContent = "(failed to load /prompt)"; });
+
+    document.querySelectorAll("[data-copy]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const text = btn.previousElementSibling.textContent;
+        navigator.clipboard.writeText(text).then(() => {
+          const original = btn.textContent;
+          btn.textContent = "Copied";
+          btn.classList.add("copied");
+          setTimeout(() => { btn.textContent = original; btn.classList.remove("copied"); }, 1400);
+        });
+      });
+    });
+  </script>
 </body>
 </html>`;
