@@ -17,7 +17,12 @@ const cases: Array<{ tool: string; kind: RequestKind; args: Record<string, unkno
   { tool: "walgo_list_files", kind: "list_files", args: {} },
   { tool: "walgo_delete_file", kind: "delete_file", args: { path: "/x.html" } },
   { tool: "walgo_init_template", kind: "init_template", args: { template: "blank" } },
+  { tool: "walgo_clear_draft", kind: "clear_draft", args: {} },
+  { tool: "walgo_load_site", kind: "load_site", args: { siteObjectId: "0xabc", network: "mainnet" } },
   { tool: "walgo_list_sites", kind: "list_sites", args: { network: "mainnet" } },
+  { tool: "walgo_list_suins", kind: "list_suins", args: {} },
+  { tool: "walgo_resolve_suins", kind: "resolve_suins", args: { name: "selim.sui" } },
+  { tool: "walgo_epoch_info", kind: "epoch_info", args: {} },
   { tool: "walgo_extend_epochs", kind: "extend_epochs", args: { siteObjectId: "0xabc", epochs: 5 } },
   { tool: "walgo_link_suins", kind: "link_suins", args: { siteObjectId: "0xabc", suinsName: "foo" } },
 ];

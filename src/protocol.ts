@@ -6,8 +6,13 @@ export type RequestKind =
   | "list_files"
   | "delete_file"
   | "init_template"
+  | "clear_draft"
+  | "load_site"
   | "deploy"
   | "list_sites"
+  | "list_suins"
+  | "resolve_suins"
+  | "epoch_info"
   | "extend_epochs"
   | "link_suins";
 
