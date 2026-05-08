@@ -5,11 +5,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
+    "dev": "npm run bundle && wrangler dev",
+    "deploy": "npm run bundle && wrangler deploy",
+    "bundle": "node scripts/bundle-static.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc -b --noEmit",
+    "typecheck": "npm run bundle && tsc -b --noEmit",
     "cf-typegen": "wrangler types"
   },
   "dependencies": {

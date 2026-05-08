@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+# walgo agent install
+#
+#   curl -fsSL https://mcp.walgo.xyz/install.sh | bash
+#
+# What this does:
+#   1. Drops the walgo skill at ~/.claude/skills/walgo/SKILL.md (Claude Code
+#      will pick it up automatically; harmless for other agents).
+#   2. Registers the hosted MCP with Claude Code if `claude` is on PATH:
+#         claude mcp add walgo --transport http https://mcp.walgo.xyz/mcp
+#      For other agents, see the Manual Setup notes printed at the end.
+#
+# Re-runnable. Won't clobber an existing different skill (only updates if
+# content has changed). Won't duplicate a registered MCP.
+
+set -euo pipefail
+
+MCP_URL="https://mcp.walgo.xyz/mcp"
+SKILL_URL="https://mcp.walgo.xyz/skill.md"
+SKILL_DIR="${HOME}/.claude/skills/walgo"
+SKILL_FILE="${SKILL_DIR}/SKILL.md"
+
+bold() { printf "\033[1m%s\033[0m\n" "$*"; }
+info() { printf "  %s\n" "$*"; }
+ok()   { printf "  \033[32m✓\033[0m %s\n" "$*"; }
+warn() { printf "  \033[33m!\033[0m %s\n" "$*"; }
+
+bold "walgo agent install"
+
+# Skill
+mkdir -p "${SKILL_DIR}"
+TMP="$(mktemp)"
+if curl -fsSL "${SKILL_URL}" -o "${TMP}"; then
+  if [[ -f "${SKILL_FILE}" ]] && cmp -s "${TMP}" "${SKILL_FILE}"; then
+    ok "skill already up to date at ${SKILL_FILE}"
+    rm -f "${TMP}"
+  else
+    mv "${TMP}" "${SKILL_FILE}"
+    ok "skill written to ${SKILL_FILE}"
+  fi
+else
+  warn "could not download skill from ${SKILL_URL} (skipping)"
+  rm -f "${TMP}"
+fi
+
+# MCP — Claude Code
+if command -v claude >/dev/null 2>&1; then
+  if claude mcp list 2>/dev/null | grep -q "^walgo:"; then
+    ok "claude already has 'walgo' MCP configured"
+  else
+    if claude mcp add walgo --transport http "${MCP_URL}" >/dev/null 2>&1; then
+      ok "registered 'walgo' MCP with Claude Code (${MCP_URL})"
+    else
+      warn "couldn't register MCP with Claude Code automatically"
+      info "run: claude mcp add walgo --transport http ${MCP_URL}"
+    fi
+  fi
+else
+  warn "claude CLI not on PATH — skipping Claude Code MCP setup"
+fi
+
+# Closing notes for other agents
+echo
+bold "Other agent hosts:"
+info "Cursor:    Settings → MCP → Add Server → URL: ${MCP_URL} (Streamable HTTP)"
+info "Codex:     ~/.codex/config.toml — add [[mcp_servers]] with url=${MCP_URL}"
+info "Continue:  config.json mcpServers entry with url=${MCP_URL}"
+
+echo
+bold "Next:"
+info "1. In a new agent session, ask it to call walgo_pair."
+info "2. Open the deep link it returns. Connect your wallet. Pair."
+info "3. The agent can now drive walgo end-to-end."

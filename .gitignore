@@ -5,3 +5,4 @@ dist
 *.tsbuildinfo
 .wrangler
 .dev.vars
+**/*.generated.ts
