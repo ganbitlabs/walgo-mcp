@@ -265,6 +265,32 @@ const LANDING_HTML = `<!doctype html>
     .footer a { color: var(--muted); }
     .footer a:hover { color: var(--accent); }
     .hint { color: var(--dim); font-size: 13px; margin: -4px 0 12px; }
+    .steps {
+      list-style: decimal;
+      padding-left: 22px;
+      color: var(--muted);
+      font-size: 14px;
+      margin: 6px 0 12px;
+    }
+    .steps li { margin: 4px 0; }
+    .steps strong { color: var(--text); font-weight: 500; }
+    .install-button {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--accent);
+      padding: 6px 12px;
+      border-radius: 3px;
+      border: 1px solid var(--accent-border);
+      background: var(--accent-dim);
+      text-decoration: none;
+      transition: all 0.12s;
+    }
+    .install-button:hover {
+      background: rgba(77,162,255,0.18);
+      border-color: var(--accent);
+      text-decoration: none;
+    }
     .corner {
       position: absolute;
       width: 8px; height: 8px;
@@ -292,32 +318,122 @@ const LANDING_HTML = `<!doctype html>
     <h1>Agent bridge for <span class="accent">Walrus</span> sites</h1>
     <p class="lede">Hosted MCP that lets your agent (Claude Code, Cursor, Codex…) build, deploy, edit, and link walgo sites end-to-end. Your wallet stays in <a href="https://web.walgo.xyz">web.walgo.xyz</a>; every chain transaction is signed there.</p>
 
-    <h2>One-liner install</h2>
+    <h2>The endpoint</h2>
+    <p class="hint">One Streamable HTTP URL — point any MCP-capable agent at this and you're 90% done.</p>
+    <div class="codeblock large"><code>https://mcp.walgo.xyz/mcp</code><button class="copy" data-copy>Copy</button></div>
+
+    <h2>One-liner install (Claude Code)</h2>
     <p class="hint">Drops the walgo skill at <code>~/.claude/skills/walgo</code> and registers the MCP with Claude Code if it's installed.</p>
     <div class="codeblock large"><code>curl -fsSL https://mcp.walgo.xyz/install.sh | bash</code><button class="copy" data-copy>Copy</button></div>
 
-    <h2>Or wire it up by hand</h2>
+    <h2>Per-client setup</h2>
 
     <div class="panel">
       <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
-      <p class="panel-title">Claude Code</p>
-      <div class="codeblock"><code>claude mcp add walgo --transport http https://mcp.walgo.xyz/mcp</code><button class="copy" data-copy>Copy</button></div>
-    </div>
-
-    <div class="panel">
-      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
-      <p class="panel-title">Cursor <span class="meta">— Settings → MCP → Add Server</span></p>
+      <p class="panel-title">Cursor</p>
+      <p class="hint" style="margin-top:-2px"><a href="cursor://anysphere.cursor-deeplink/mcp/install?name=walgo&config=eyJ1cmwiOiJodHRwczovL21jcC53YWxnby54eXovbWNwIn0=" class="install-button">→ One-click install</a></p>
+      <p class="hint">Or manually — add to <code>.cursor/mcp.json</code>:</p>
       <div class="codeblock muted-text"><code>{
-  "name": "walgo",
-  "transport": "http",
-  "url": "https://mcp.walgo.xyz/mcp"
+  "mcpServers": {
+    "walgo": {
+      "url": "https://mcp.walgo.xyz/mcp"
+    }
+  }
 }</code><button class="copy" data-copy>Copy</button></div>
     </div>
 
     <div class="panel">
       <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
-      <p class="panel-title">Codex / Continue / others <span class="meta">— Streamable HTTP URL</span></p>
+      <p class="panel-title">VS Code <span class="meta">/ GitHub Copilot</span></p>
+      <p class="hint" style="margin-top:-2px"><a href="vscode:mcp/install?%7B%22name%22%3A%22walgo%22%2C%22config%22%3A%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fmcp.walgo.xyz%2Fmcp%22%7D%7D" class="install-button">→ One-click install</a></p>
+      <p class="hint">Or manually — add to <code>.vscode/mcp.json</code>:</p>
+      <div class="codeblock muted-text"><code>{
+  "servers": {
+    "walgo": {
+      "type": "http",
+      "url": "https://mcp.walgo.xyz/mcp"
+    }
+  }
+}</code><button class="copy" data-copy>Copy</button></div>
+    </div>
+
+    <div class="panel">
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+      <p class="panel-title">Claude Code</p>
+      <div class="codeblock"><code>claude mcp add --scope user --transport http walgo https://mcp.walgo.xyz/mcp</code><button class="copy" data-copy>Copy</button></div>
+    </div>
+
+    <div class="panel">
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+      <p class="panel-title">Claude Desktop</p>
+      <ol class="steps">
+        <li>Open <strong>Settings → Connectors</strong> (or <strong>Developer</strong> on older versions).</li>
+        <li>Click <strong>Add custom connector</strong> / <strong>Add remote MCP server</strong>.</li>
+        <li>Paste the URL:</li>
+      </ol>
       <div class="codeblock"><code>https://mcp.walgo.xyz/mcp</code><button class="copy" data-copy>Copy</button></div>
+    </div>
+
+    <div class="panel">
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+      <p class="panel-title">Claude.ai <span class="meta">— claude.ai/web</span></p>
+      <ol class="steps">
+        <li><strong>Settings → Connectors → Custom Connectors → Add Custom Connector</strong>.</li>
+        <li>Paste the URL above. Name it <code>walgo</code>.</li>
+      </ol>
+      <p class="hint">Available on Pro / Team / Enterprise plans.</p>
+    </div>
+
+    <div class="panel">
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+      <p class="panel-title">ChatGPT <span class="meta">— chat.openai.com</span></p>
+      <ol class="steps">
+        <li><strong>Settings → Connectors → Add Custom Connector</strong>.</li>
+        <li>Paste the URL above. Name it <code>walgo</code>.</li>
+      </ol>
+      <p class="hint">Available on Plus / Pro / Team / Enterprise.</p>
+    </div>
+
+    <div class="panel">
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+      <p class="panel-title">Codex CLI</p>
+      <div class="codeblock"><code>codex mcp add walgo --url https://mcp.walgo.xyz/mcp</code><button class="copy" data-copy>Copy</button></div>
+      <p class="hint" style="margin-top:10px">Or add to <code>~/.codex/config.toml</code>:</p>
+      <div class="codeblock muted-text"><code>[mcp_servers.walgo]
+url = "https://mcp.walgo.xyz/mcp"</code><button class="copy" data-copy>Copy</button></div>
+    </div>
+
+    <div class="panel">
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+      <p class="panel-title">Gemini CLI</p>
+      <div class="codeblock"><code>gemini mcp add -t http walgo https://mcp.walgo.xyz/mcp</code><button class="copy" data-copy>Copy</button></div>
+      <p class="hint" style="margin-top:10px">Or add to <code>~/.gemini/settings.json</code>:</p>
+      <div class="codeblock muted-text"><code>{
+  "mcpServers": {
+    "walgo": {
+      "httpUrl": "https://mcp.walgo.xyz/mcp"
+    }
+  }
+}</code><button class="copy" data-copy>Copy</button></div>
+    </div>
+
+    <div class="panel">
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+      <p class="panel-title">Windsurf</p>
+      <p class="hint">Add to <code>~/.codeium/windsurf/mcp_config.json</code>:</p>
+      <div class="codeblock muted-text"><code>{
+  "mcpServers": {
+    "walgo": {
+      "serverUrl": "https://mcp.walgo.xyz/mcp"
+    }
+  }
+}</code><button class="copy" data-copy>Copy</button></div>
+    </div>
+
+    <div class="panel">
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+      <p class="panel-title">Other clients <span class="meta">— Continue, Zed, anything that speaks Streamable HTTP MCP</span></p>
+      <p class="hint">Just point them at the endpoint URL. Field names vary slightly (<code>url</code>, <code>httpUrl</code>, <code>serverUrl</code>) — consult your client's docs.</p>
     </div>
 
     <h2>Bootstrap prompt</h2>
