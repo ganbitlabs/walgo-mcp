@@ -1,6 +1,6 @@
 {
   "name": "walgo-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MCP server bridging an agent to a walgo-web browser tab",
   "private": true,
   "type": "module",

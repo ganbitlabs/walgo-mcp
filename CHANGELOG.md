@@ -4,6 +4,21 @@ All notable changes are documented here. Format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-05-09
+
+walgo-mcp went **public** on this day. Two security-hardening landings preceded the flip; both close attack vectors that per-IP rate limiting alone leaves open.
+
+### Security
+
+- **Coordinator failure-budget circuit breaker** ([#27](https://github.com/ganbitlabs/walgo-mcp/pull/27)). `CoordinatorDO` now tracks lookup-failure count over a rolling 60s window. Once misses exceed 50, every currently-registered pairing code is invalidated — legit users re-pair on a fresh code the attacker hasn't seen. Defeats botnet brute-force on the 8-digit pairing code (the per-IP `/pair` rate limit only slows a single attacker; a distributed attacker can still cycle the namespace under the per-IP cap). Successful lookups don't count against the budget. Two new `vitest-pool-workers` tests cover the threshold lockout and the success-exempt invariant.
+- **Per-session mint rate limit on `walgo_pair`** ([#28](https://github.com/ganbitlabs/walgo-mcp/pull/28)). New `MINT_RATE_LIMITER` Cloudflare rate-limit binding (30 mints / 60s, keyed on `SessionDO` id). Stops a noisy agent from flooding `CoordinatorDO` storage with thousands of one-shot codes/min. Per-session keying isolates the abuser without penalising legit users sharing an egress (CI runners, NAT). `walgo_pair` returns a structured `rate_limited` error result when the budget is exhausted, mirroring the proxy tools' `BridgeError` shape.
+
+ADRs 0001 and 0003 + SECURITY.md updated to reflect both mitigations in the threat-model tables.
+
+### CI / tooling
+
+- **CodeQL workflow gets `actions: read`** ([#29](https://github.com/ganbitlabs/walgo-mcp/pull/29)). The analyze action's telemetry post-step calls the workflow-runs API; without this permission the job failed even when the scan itself succeeded. (On the private repo, GitHub Advanced Security was the deeper blocker — that becomes free with the public flip, so CodeQL goes green from this release on.)
+
 ## [0.1.0] — 2026-05-09
 
 First tagged release. The MCP runs in two transports:
@@ -65,5 +80,6 @@ Tool I/O is documented via standard MCP `tools/list`. The skill at <https://mcp.
 - GitHub Actions CI: typecheck, build, vitest, real-binary smoke (stdio); typecheck, vitest, `wrangler deploy --dry-run` (worker); `npm audit --audit-level=high`; CodeQL on every push/PR + weekly cron.
 - Actions pinned to commit SHAs with version comments; Dependabot weekly grouped updates preserve that format.
 
-[Unreleased]: https://github.com/ganbitlabs/walgo-mcp/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/ganbitlabs/walgo-mcp/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/ganbitlabs/walgo-mcp/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/ganbitlabs/walgo-mcp/releases/tag/v0.1.0
