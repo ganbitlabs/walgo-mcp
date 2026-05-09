@@ -6,3 +6,4 @@ dist
 .wrangler
 .dev.vars
 **/*.generated.ts
+.dry-run

@@ -1,0 +1,38 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    labels: [dependencies]
+    groups:
+      types:
+        patterns: ["@types/*"]
+      mcp:
+        patterns: ["@modelcontextprotocol/*", "agents"]
+      tooling:
+        patterns: ["typescript", "vitest", "@vitest/*"]
+
+  - package-ecosystem: npm
+    directory: "/worker"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    labels: [dependencies, worker]
+    groups:
+      cloudflare:
+        patterns: ["@cloudflare/*", "wrangler"]
+      mcp:
+        patterns: ["@modelcontextprotocol/*", "agents"]
+      tooling:
+        patterns: ["typescript", "vitest", "@vitest/*"]
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    labels: [dependencies, github-actions]
