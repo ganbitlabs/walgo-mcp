@@ -1,0 +1,72 @@
+name: Bug report
+description: Something is broken or behaving unexpectedly.
+title: "[bug] "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. A few details up front make triage 10× faster.
+
+  - type: dropdown
+    id: transport
+    attributes:
+      label: Where does this happen?
+      options:
+        - Hosted (mcp.walgo.xyz)
+        - Local stdio binary
+        - Both
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: agent
+    attributes:
+      label: Agent host
+      description: e.g. Claude Code 1.2.3, Cursor 0.42, Codex CLI 0.5
+    validations:
+      required: false
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. claude mcp add walgo --transport http https://mcp.walgo.xyz/mcp
+        2. call walgo_pair
+        3. paste code on web.walgo.xyz
+        4. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: What actually happened
+      description: Include error codes (e.g. `not_paired`, `wallet_rejected`) and any tx digests.
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs (optional)
+      description: Browser console / MCP activity log / wrangler tail output. Redact wallet addresses if you'd like.
+      render: text
+
+  - type: checkboxes
+    id: sanity
+    attributes:
+      label: Quick sanity checks
+      options:
+        - label: I'm on the latest version (`gh release list -R ganbitlabs/walgo-mcp` or `npm outdated`)
+        - label: My wallet is connected on the matching network (mainnet/testnet)
+        - label: `walgo_status` returned `paired: true` before the failure

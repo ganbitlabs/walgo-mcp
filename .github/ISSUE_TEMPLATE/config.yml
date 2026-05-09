@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: walgo discussions
+    url: https://github.com/ganbitlabs/walgo-mcp/discussions
+    about: Open-ended questions, ideas, "is this the right way to…"
+  - name: walgo browser app
+    url: https://github.com/ganbitlabs/walgo-web/issues
+    about: Bugs in the wallet pairing UI or editor — file there instead.
