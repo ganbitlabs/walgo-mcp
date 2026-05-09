@@ -297,10 +297,9 @@ function sendServerMessage(ws: WebSocket, msg: ServerMessage): void {
 function generatePairingCode(): string {
   // 8-digit numeric — 100M space, easy for humans to type, fine when paired
   // with a 5-minute TTL + per-IP rate limit on the /pair endpoint.
-  const buf = new Uint8Array(4);
+  const buf = new Uint32Array(1);
   crypto.getRandomValues(buf);
-  const n = ((buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3]) >>> 0;
-  return String(n % 100_000_000).padStart(8, "0");
+  return String(buf[0]! % 100_000_000).padStart(8, "0");
 }
 
 // Re-export for consumers that need to know which header the worker uses
