@@ -11,6 +11,10 @@ on:
 permissions:
   contents: read
   security-events: write
+  # Telemetry post-step in github/codeql-action/analyze fetches workflow-run
+  # metadata; without actions:read it fails the whole job even though the
+  # scan itself succeeded (no findings).
+  actions: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
