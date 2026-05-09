@@ -61,8 +61,8 @@ sequenceDiagram
     A->>M: walgo_pair
     M-->>A: { code, deepLink }
     A->>U: paste deepLink
-    U->>B: open https://web.walgo.xyz/pair/&lt;code&gt;
-    B->>M: wss /pair?code=&lt;code&gt;
+    U->>B: open https://web.walgo.xyz/pair/{code}
+    B->>M: wss /pair?code={code}
     M-->>M: validate code in CoordinatorDO
     M->>B: paired ✓
     Note over A,B: bridge open — agent tools route to browser
