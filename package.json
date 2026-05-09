@@ -4,6 +4,10 @@
   "description": "MCP server bridging an agent to a walgo-web browser tab",
   "private": true,
   "type": "module",
+  "workspaces": [
+    "packages/*",
+    "worker"
+  ],
   "bin": {
     "walgo-mcp": "./dist/index.js"
   },
@@ -13,14 +17,15 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.4",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@walgo/mcp-protocol": "*",
     "ws": "^8.18.0",
-    "zod": "^3.23.8"
+    "zod": "^4.0.0"
   },
   "devDependencies": {
     "@types/node": "^24.12.0",
     "@types/ws": "^8.5.13",
     "typescript": "~5.9.3",
-    "vitest": "^2.1.8"
+    "vitest": "^4.1.0"
   }
 }
