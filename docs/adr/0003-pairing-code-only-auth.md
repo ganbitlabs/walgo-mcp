@@ -26,7 +26,7 @@ The actual risks and how we mitigate them without OAuth:
 
 | Risk | Mitigation |
 |---|---|
-| Anonymous pair-code flood (DDoS) | Per-IP rate limit on `/pair` and on `walgo_pair` invocations |
+| Anonymous pair-code flood (DDoS) | Per-IP rate limit on `/pair` (10/60s) and per-MCP-session rate limit on `walgo_pair` mints (30/60s, keyed on the SessionDO id so a noisy agent can't exhaust Coordinator storage) |
 | Code brute-forcing (single attacker) | 8 digits = 100M space, 5-min TTL, per-IP rate limit on `/pair` (10/60s) |
 | Code brute-forcing (botnet, defeats per-IP) | Coordinator-wide failure-budget circuit breaker — once lookups miss more than 50 times in any 60s window, every currently-registered code is invalidated; legit users re-pair on a fresh code the attacker hasn't seen |
 | Stolen code (shoulder surf, screen share) | Codes are one-shot and time-bound. Even a stolen code only joins someone else's MCP session, where signing still requires the legitimate user's wallet popup |

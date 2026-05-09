@@ -11,10 +11,21 @@ import {
   type ServerMessage,
 } from "./protocol.js";
 
+interface RateLimit {
+  limit(opts: { key: string }): Promise<{ success: boolean }>;
+}
+
 interface Env {
   SESSIONS: DurableObjectNamespace<SessionDO>;
   COORDINATOR: DurableObjectNamespace;
+  MINT_RATE_LIMITER: RateLimit;
   WALGO_WEB_URL?: string;
+}
+
+class MintRateLimitError extends Error {
+  constructor() {
+    super("rate_limited");
+  }
 }
 
 interface Pending {
@@ -94,9 +105,19 @@ export class SessionDO extends DurableObject<Env> {
       "walgo_pair",
       { description: "Issue a one-shot pairing code and a deep link the user can open to pair their walgo browser tab." },
       async () => {
-        const code = await this.requestPairing();
-        const baseWeb = this.env.WALGO_WEB_URL ?? DEFAULT_WALGO_WEB_URL;
-        return ok({ code, deepLink: `${baseWeb}/pair/${code}`, expiresInSeconds: PAIR_CODE_TTL_MS / 1000 });
+        try {
+          const code = await this.requestPairing();
+          const baseWeb = this.env.WALGO_WEB_URL ?? DEFAULT_WALGO_WEB_URL;
+          return ok({ code, deepLink: `${baseWeb}/pair/${code}`, expiresInSeconds: PAIR_CODE_TTL_MS / 1000 });
+        } catch (err) {
+          if (err instanceof MintRateLimitError) {
+            return errorResult(
+              "rate_limited",
+              "walgo_pair mint rate exceeded for this session — wait ~60 seconds before retrying.",
+            );
+          }
+          throw err;
+        }
       },
     );
 
@@ -198,6 +219,11 @@ export class SessionDO extends DurableObject<Env> {
   // ---- Pairing -------------------------------------------------------------
 
   private async requestPairing(): Promise<string> {
+    // Per-session mint cap (binding configured in wrangler.jsonc). Stops a
+    // single agent from flooding the Coordinator with one-shot codes.
+    const { success } = await this.env.MINT_RATE_LIMITER.limit({ key: this.ctx.id.toString() });
+    if (!success) throw new MintRateLimitError();
+
     const code = generatePairingCode();
     const coordId = this.env.COORDINATOR.idFromName("singleton");
     const coord = this.env.COORDINATOR.get(coordId);
