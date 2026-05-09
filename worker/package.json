@@ -1,6 +1,6 @@
 {
   "name": "walgo-mcp-worker",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Hosted walgo-mcp on Cloudflare Workers — bridges agents (Streamable HTTP) to a paired browser tab (WSS).",
   "private": true,
   "type": "module",

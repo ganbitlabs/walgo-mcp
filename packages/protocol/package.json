@@ -1,6 +1,6 @@
 {
   "name": "@walgo/mcp-protocol",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Wire protocol shared between walgo-mcp's stdio + worker transports.",
   "private": true,
   "type": "module",
