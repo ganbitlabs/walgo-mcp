@@ -32,7 +32,7 @@ Things explicitly **out of scope**:
 The detailed reasoning is in the ADRs ([0001](docs/adr/0001-paired-browser-architecture.md), [0003](docs/adr/0003-pairing-code-only-auth.md)) — short version:
 
 - The server holds **zero key material**. Every chain transaction is signed by the user's wallet inside the paired browser tab. A compromised walgo-mcp host can route tool calls but can't sign anything without a wallet popup the user rejects.
-- The pairing code is the bootstrap primitive, not the security boundary. 8 digits + 5-min TTL + per-IP rate limit makes brute-forcing one specific code statistically infeasible. A successfully-guessed code joins someone else's MCP session, where signing still requires the legitimate user's wallet.
+- The pairing code is the bootstrap primitive, not the security boundary. 8 digits + 5-min TTL + per-IP rate limit makes brute-forcing one specific code statistically infeasible for a single attacker. A botnet that defeats per-IP also can't get far: the Coordinator DO trips a global circuit breaker once lookups miss more than 50 times in any 60s window, invalidating every currently-registered code and forcing legit users to re-pair on something the attacker hasn't seen. A successfully-guessed code joins someone else's MCP session, where signing still requires the legitimate user's wallet.
 - The wire protocol is JSON-only with strict id-based request/response correlation; malformed messages are silently dropped (see `tests/pairing-edges.test.ts`).
 
 If you find a way around any of these — please email us.
