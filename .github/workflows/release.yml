@@ -1,0 +1,86 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false  # don't interrupt a release mid-create
+
+jobs:
+  release:
+    name: Release ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 22.x
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # Pre-flight: don't release a tag that doesn't compile / pass tests.
+      - name: Type-check (stdio)
+        run: npx tsc --noEmit
+      - name: Test (stdio)
+        run: npm test
+      - name: Type-check (worker)
+        run: npm run typecheck --workspace=worker
+      - name: Test (worker)
+        run: npx vitest run
+        working-directory: worker
+      - name: Build (stdio)
+        run: npm run build
+
+      - name: Extract release notes from CHANGELOG.md
+        id: notes
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          # Pull out everything between `## [TAG]` and the next `## [` heading.
+          awk -v tag="$TAG" '
+            /^## \[/ {
+              if (capture) exit
+              if ($0 ~ "\\[" tag "\\]") { capture = 1; next }
+            }
+            capture && /^\[[^]]+\]:[[:space:]]/ { exit }   # stop at link refs
+            capture { print }
+          ' CHANGELOG.md > release-notes.md
+          # Trim trailing blank lines.
+          sed -i -e :a -e '/^$/{$d;N;ba' -e '}' release-notes.md
+
+          if [ ! -s release-notes.md ]; then
+            echo "::warning::No CHANGELOG entry for $TAG — falling back to git-generated notes."
+            echo "fallback=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "fallback=false" >> "$GITHUB_OUTPUT"
+            echo "--- extracted notes ---"
+            cat release-notes.md
+          fi
+
+      - name: Create GitHub Release (with extracted notes)
+        if: steps.notes.outputs.fallback == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --notes-file release-notes.md \
+            --verify-tag
+
+      - name: Create GitHub Release (auto-generated fallback)
+        if: steps.notes.outputs.fallback == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes \
+            --verify-tag
