@@ -25,10 +25,10 @@ jobs:
       matrix:
         language: [javascript-typescript]
     steps:
-      - uses: actions/checkout@v4
-      - uses: github/codeql-action/init@v3
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: github/codeql-action/init@5e316336eb4f107009e477d4bfbfff13d7250fae # v4
         with:
           languages: ${{ matrix.language }}
-      - uses: github/codeql-action/analyze@v3
+      - uses: github/codeql-action/analyze@5e316336eb4f107009e477d4bfbfff13d7250fae # v4
         with:
           category: "/language:${{ matrix.language }}"
