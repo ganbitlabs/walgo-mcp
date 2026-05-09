@@ -28,8 +28,13 @@ jobs:
         run: npm ci
 
       # Pre-flight: don't release a tag that doesn't compile / pass tests.
+      # Build (stdio) MUST run before Test (stdio) — the smoke spec spawns the
+      # built `dist/index.js`. CI's main workflow gets this right; the release
+      # workflow had it inverted and tripped on the first real run (v0.1.1).
       - name: Type-check (stdio)
         run: npx tsc --noEmit
+      - name: Build (stdio)
+        run: npm run build
       - name: Test (stdio)
         run: npm test
       - name: Type-check (worker)
@@ -37,8 +42,6 @@ jobs:
       - name: Test (worker)
         run: npx vitest run
         working-directory: worker
-      - name: Build (stdio)
-        run: npm run build
 
       - name: Extract release notes from CHANGELOG.md
         id: notes
