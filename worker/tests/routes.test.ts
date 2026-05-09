@@ -1,5 +1,20 @@
 import { describe, it, expect } from "vitest";
-import { SELF } from "cloudflare:test";
+import { SELF, env } from "cloudflare:test";
+
+// vitest-pool-workers needs this so `env` carries the bindings declared in
+// wrangler.jsonc — specifically MINT_RATE_LIMITER and SESSIONS for the
+// per-session mint-rate test below.
+interface RateLimit {
+  limit(opts: { key: string }): Promise<{ success: boolean }>;
+}
+interface RoutesEnv {
+  MINT_RATE_LIMITER: RateLimit;
+  SESSIONS: DurableObjectNamespace;
+}
+declare module "cloudflare:test" {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface ProvidedEnv extends RoutesEnv {}
+}
 
 describe("Worker routes", () => {
   describe("static content", () => {
@@ -108,6 +123,62 @@ describe("Worker routes", () => {
       });
       expect(res.status).toBe(200);
       expect(res.headers.get("mcp-session-id")).toBeTruthy();
+    });
+
+    // walgo_pair mints a one-shot code that lives in CoordinatorDO storage
+    // for 5 minutes. Without a per-session rate limit, a single abuser can
+    // mint thousands of codes/min — flood storage, drive up CF cost, and
+    // (in conjunction with the failure-budget circuit breaker) thrash legit
+    // users into constant re-pairs.
+    it("rate-limits walgo_pair mints from a single MCP session", async () => {
+      const sessionId = "mint-rate-test-session";
+      const doId = env.SESSIONS.idFromName(sessionId).toString();
+
+      // Pre-exhaust the session's mint budget (30/60s in wrangler.jsonc) on
+      // the same key the SessionDO uses — the limiter is shared, so this
+      // counts against the next walgo_pair call.
+      for (let i = 0; i < 30; i++) {
+        const { success } = await env.MINT_RATE_LIMITER.limit({ key: doId });
+        expect(success).toBe(true);
+      }
+
+      const headers = {
+        "content-type": "application/json",
+        accept: "application/json, text/event-stream",
+        "mcp-session-id": sessionId,
+      };
+
+      const init = await SELF.fetch("https://example.com/mcp", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 1,
+          method: "initialize",
+          params: {
+            protocolVersion: "2025-03-26",
+            capabilities: {},
+            clientInfo: { name: "test", version: "0" },
+          },
+        }),
+      });
+      expect(init.status).toBe(200);
+
+      const call = await SELF.fetch("https://example.com/mcp", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 2,
+          method: "tools/call",
+          params: { name: "walgo_pair", arguments: {} },
+        }),
+      });
+      const body = await call.text();
+
+      // The MCP SDK serialises tool errors as { isError: true, content: [...] }
+      // with our errorResult helper embedding the JSON { error: { code, ... } }.
+      expect(body).toContain("rate_limited");
     });
   });
 });
