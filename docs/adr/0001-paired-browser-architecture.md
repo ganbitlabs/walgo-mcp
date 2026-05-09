@@ -34,7 +34,7 @@ A pairing code (8 digits, 5-min TTL) bootstraps the WS connection. After pairing
 
 - The user must keep the browser tab open for tools to work. We added a clear paired/disconnected status; the UX is acceptable but not invisible.
 - Sessions are ephemeral. If the tab closes or the DO hibernates, the user re-pairs. We accept this; durable sessions would require server-held credentials which contradicts the whole point.
-- Pair-code bootstrapping is a small attack surface. Mitigated by 8-digit codes, 5-min TTL, per-IP rate limit, and the fact that even a successful brute-force only joins someone *else's* MCP session — they still can't sign without their wallet.
+- Pair-code bootstrapping is a small attack surface. Mitigated by 8-digit codes, 5-min TTL, per-IP rate limit, a Coordinator-wide failure-budget circuit breaker (>50 misses / 60s wipes all active codes; defeats botnet brute-force), and the fact that even a successful brute-force only joins someone *else's* MCP session — they still can't sign without their wallet.
 
 ## Alternatives rejected
 

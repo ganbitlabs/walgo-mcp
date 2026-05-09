@@ -7,6 +7,19 @@ interface PairingRecord {
 
 const SWEEP_INTERVAL_MS = 60_000;
 const KEY_PREFIX = "code:";
+const FAILURES_KEY = "failures";
+// Brute-force circuit breaker: once more than FAILURE_THRESHOLD lookups miss
+// inside a single FAILURE_WINDOW_MS window, every currently-registered code
+// is invalidated. The per-IP rate limit on /pair caps a single attacker; this
+// caps a botnet (which would otherwise cycle the 8-digit space against a
+// known-active code without tripping any per-IP bucket).
+const FAILURE_WINDOW_MS = 60_000;
+const FAILURE_THRESHOLD = 50;
+
+interface FailureWindow {
+  count: number;
+  windowStartMs: number;
+}
 
 /**
  * Coordinator DO maps short pairing codes to SessionDO ids with a TTL.
@@ -53,10 +66,26 @@ export class CoordinatorDO extends DurableObject {
   async lookupAndConsume(code: string): Promise<string | null> {
     const key = KEY_PREFIX + code;
     const record = await this.ctx.storage.get<PairingRecord>(key);
-    if (!record) return null;
-    await this.ctx.storage.delete(key);
-    if (record.expiresAt < Date.now()) return null;
-    return record.sessionDoId;
+    if (record) {
+      await this.ctx.storage.delete(key);
+      if (record.expiresAt >= Date.now()) return record.sessionDoId;
+    }
+    await this.recordFailure();
+    return null;
+  }
+
+  private async recordFailure(): Promise<void> {
+    const now = Date.now();
+    const prior = await this.ctx.storage.get<FailureWindow>(FAILURES_KEY);
+    const window: FailureWindow =
+      prior && now - prior.windowStartMs < FAILURE_WINDOW_MS
+        ? { count: prior.count + 1, windowStartMs: prior.windowStartMs }
+        : { count: 1, windowStartMs: now };
+    await this.ctx.storage.put(FAILURES_KEY, window);
+    if (window.count > FAILURE_THRESHOLD) {
+      const all = await this.ctx.storage.list<PairingRecord>({ prefix: KEY_PREFIX });
+      if (all.size > 0) await this.ctx.storage.delete([...all.keys()]);
+    }
   }
 
   private async ensureAlarm(): Promise<void> {
