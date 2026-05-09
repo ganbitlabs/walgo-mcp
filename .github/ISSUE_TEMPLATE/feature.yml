@@ -1,0 +1,42 @@
+name: Feature request
+description: Suggest a new tool, transport, or capability.
+title: "[feat] "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: textarea
+    id: motivation
+    attributes:
+      label: What problem does this solve?
+      description: A real workflow, not "would be nice to have". What can't you do today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Sketch the shape — new tool name, params, return shape; or transport/protocol change.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Where does this land?
+      multiple: true
+      options:
+        - New MCP tool
+        - Existing tool — change behavior
+        - Wire protocol change
+        - Worker / hosted-only
+        - Stdio / local-only
+        - Browser side (walgo-web)
+        - Docs / skill
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What else did you think about? Why is this one better?
