@@ -18,5 +18,20 @@
       "tag": "v1",
       "new_sqlite_classes": ["SessionDO", "CoordinatorDO"]
     }
+  ],
+  // Rate limit on the /pair WS upgrade — the brute-force surface.
+  // 10 attempts per 60s per client IP. With 8-digit codes (1B space) and
+  // 5-min TTL, this makes brute-forcing one specific code statistically
+  // infeasible while not blocking legitimate users (a real user only
+  // /pair's once or twice).
+  "ratelimits": [
+    {
+      "name": "PAIR_RATE_LIMITER",
+      "namespace_id": "1001",
+      "simple": {
+        "limit": 10,
+        "period": 60
+      }
+    }
   ]
 }

@@ -4,9 +4,14 @@ import { SKILL_MD, INSTALL_SH } from "./static.generated.js";
 
 export { SessionDO, CoordinatorDO };
 
+interface RateLimit {
+  limit(opts: { key: string }): Promise<{ success: boolean }>;
+}
+
 interface Env {
   SESSIONS: DurableObjectNamespace<SessionDO>;
   COORDINATOR: DurableObjectNamespace<CoordinatorDO>;
+  PAIR_RATE_LIMITER: RateLimit;
   WALGO_WEB_URL?: string;
 }
 
@@ -38,6 +43,19 @@ export default {
       if (request.headers.get("Upgrade") !== "websocket") {
         return new Response("expected websocket upgrade", { status: 426 });
       }
+
+      // Rate-limit before doing any work — code brute-forcing is the only
+      // thing this endpoint can be abused for. Key on client IP; fall back
+      // to a global bucket if the header is somehow missing.
+      const clientIp = request.headers.get("CF-Connecting-IP") ?? "unknown";
+      const { success: allowed } = await env.PAIR_RATE_LIMITER.limit({ key: `pair:${clientIp}` });
+      if (!allowed) {
+        return new Response("rate limit exceeded", {
+          status: 429,
+          headers: { "retry-after": "60" },
+        });
+      }
+
       const code = url.searchParams.get("code") ?? "";
       if (!PAIR_CODE_RE.test(code)) {
         return new Response("invalid code format", { status: 400 });
