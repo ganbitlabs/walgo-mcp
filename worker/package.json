@@ -16,7 +16,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@walgo/mcp-protocol": "*",
-    "agents": "^0.12.3",
+    "agents": "^0.12.4",
     "zod": "^4.0.0"
   },
   "devDependencies": {
