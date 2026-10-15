@@ -19,6 +19,13 @@ updates:
         patterns: ["@modelcontextprotocol/*", "agents"]
       tooling:
         patterns: ["typescript", "vitest", "@vitest/*"]
+    ignore:
+      # The worker tests run on @cloudflare/vitest-pool-workers, which (as of
+      # 0.23.0) peers on vitest ^4.1. Drop this once it accepts vitest 5.
+      - dependency-name: vitest
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@vitest/*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: "/"
