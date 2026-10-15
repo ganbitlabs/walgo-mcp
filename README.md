@@ -81,7 +81,7 @@ Two transports share most of the codebase:
 | **Streamable HTTP** | Cloudflare Worker (`worker/`) | Hosted public endpoint at `https://mcp.walgo.xyz/mcp` — recommended for end users |
 | **stdio** | Node binary (`src/`) | Local development, offline use, or self-hosted local install |
 
-The wire protocol between server and paired browser is in `src/protocol.ts` (and mirrored to `worker/src/protocol.ts` and walgo-web's `src/lib/mcp/protocol.ts`). All three are kept in sync.
+The wire protocol between server and paired browser is defined once in `packages/protocol/src/index.ts` (`@walgo/mcp-protocol`); `src/protocol.ts` and `worker/src/protocol.ts` re-export it. walgo-web keeps its own copy, so protocol changes stay backward compatible or ship in lockstep with it.
 
 ## Tools
 

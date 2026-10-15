@@ -10,7 +10,7 @@
 
 - [ ] `npm test` passes (stdio side)
 - [ ] `cd worker && npm run typecheck` passes
-- [ ] If wire protocol changed: `src/protocol.ts`, `worker/src/protocol.ts`, and walgo-web's `src/lib/mcp/protocol.ts` are all in sync
+- [ ] If wire protocol changed: edited `packages/protocol/src/index.ts` (not the re-export shims), and the change is backward compatible or has a matching walgo-web PR
 - [ ] If a new tool was added or a tool's I/O shape changed: skill at `https://mcp.walgo.xyz/skill.md` updated (or noted as follow-up)
 - [ ] Manual end-to-end pair + tool round-trip if behaviour-affecting
 
