@@ -35,15 +35,17 @@ src/                      # Node stdio binary (used by Claude Code / Cursor as a
   bridge.ts               # localhost WS bridge to the paired browser
   session.ts              # in-memory session state (code, paired ws, pending requests)
   tools.ts                # tool registry — all tools defined once, used by both transports
-  protocol.ts             # wire protocol with the browser (MUST match worker/ + walgo-web)
+  protocol.ts             # re-exports @walgo/mcp-protocol (packages/protocol)
   result.ts               # ok() / errorResult() helpers
 
 worker/                   # Cloudflare Worker (hosted at mcp.walgo.xyz)
   src/index.ts            # fetch handler — routes /mcp + /pair + static endpoints
   src/session-do.ts       # per-session Durable Object: hosts MCP, holds browser ws
   src/coordinator-do.ts   # code → sessionDoId map with TTL + alarm-based sweep
-  src/protocol.ts         # mirror of src/protocol.ts (kept in sync)
+  src/protocol.ts         # re-exports @walgo/mcp-protocol (packages/protocol)
   src/static.generated.ts # bundled SKILL.md + install.sh (generated at build)
+
+packages/protocol/        # @walgo/mcp-protocol: the wire protocol, defined once
 
 skill/SKILL.md            # the single source of truth for the agent playbook,
                           # served by the worker at /skill.md
@@ -51,17 +53,13 @@ skill/SKILL.md            # the single source of truth for the agent playbook,
 tests/                    # vitest specs for the stdio side
 ```
 
-The wire protocol lives in **three places** and they must stay identical:
+The wire protocol is defined once, in `packages/protocol/src/index.ts` (`@walgo/mcp-protocol`). `src/protocol.ts` and `worker/src/protocol.ts` only re-export it, so edit the package, never the shims.
 
-1. `src/protocol.ts` (stdio)
-2. `worker/src/protocol.ts` (worker)
-3. `src/lib/mcp/protocol.ts` in [walgo-web](https://github.com/ganbitlabs/walgo-web) (browser)
-
-If you change one, change all three. The PR template includes a checkbox for this.
+The browser side of the bridge lives in [walgo-web](https://github.com/ganbitlabs/walgo-web), which keeps its own copy of these types. A protocol change must stay backward compatible, or ship in lockstep with a matching walgo-web change. The PR template includes a checkbox for this.
 
 ## Adding a new tool
 
-1. Add a literal to `RequestKind` in all three `protocol.ts` files.
+1. Add a literal to `RequestKind` in `packages/protocol/src/index.ts`, and the matching type in walgo-web's copy.
 2. Register it in `src/tools.ts` and `worker/src/tools.ts` (or wherever the worker's central registration lives) with the right `inputSchema`.
 3. Add a handler in walgo-web's `src/lib/mcp/handlers.ts` that does the actual browser-side work.
 4. Add a test case to `tests/proxy-tools.test.ts` if the tool is a simple proxy, or write a dedicated test if it has its own logic.

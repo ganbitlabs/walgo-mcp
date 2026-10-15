@@ -1,0 +1,19 @@
+review_strategy: crosscheck
+severity_threshold: important
+
+knowledge_paths:
+  - AGENTS.md
+  - CONTRIBUTING.md
+  - SECURITY.md
+  - docs/adr
+
+ignore_paths:
+  - package-lock.json
+  - "**/*.generated.ts"
+
+instructions:
+  - "packages/protocol/src/index.ts is the wire contract with a separately deployed browser client and must stay backward compatible: flag removed or renamed message types, request kinds, or fields, newly required fields, and changed semantics unless the PR states it ships in lockstep with the client."
+  - "The server must never sign transactions or hold signing material: flag any code in src/ or worker/ that requests, receives, stores, or forwards private keys, mnemonics, seed phrases, or wallet signatures for server-side use. Every chain transaction is signed in the paired browser tab (ADR 0001)."
+  - "Pairing is the only auth (ADR 0003): flag changes that weaken pairing-code entropy, TTL, one-shot use, the per-IP and per-session rate limits, or the failure-budget circuit breaker, or that let an unpaired session reach proxy tools."
+  - "The stdio server (src/) and the Worker (worker/) expose the same tool set: flag tool names, input schemas, or behavior changed in one transport but not the other."
+  - "This repository is public: flag anything that leaks secrets or private infrastructure details."
