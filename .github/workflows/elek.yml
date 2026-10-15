@@ -1,0 +1,18 @@
+name: elek
+on:
+  pull_request: { types: [opened, synchronize, reopened] }
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: elek-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  elek:
+    uses: ganbitlabs/shared-workflows/.github/workflows/elek.yml@141b4e7e1f3479ade3d4c6fe8913b4e4b6d3a815 # v1.0.4
+    secrets:
+      OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
