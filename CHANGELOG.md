@@ -4,6 +4,10 @@ All notable changes are documented here. Format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+### Security
+
+- **Dependency advisories cleared** ([#51](https://github.com/ganbitlabs/walgo-mcp/pull/51)). `@modelcontextprotocol/sdk` moves to `^1.32.1`, and a root `overrides` entry makes `agents@0.12.x` use it instead of its pinned 1.29.0. Transitive packages such as `ai`, `@babel/core`, `hono`, `ws`, and `proxy-addr` move to patched versions inside their existing ranges. `npm audit --omit=dev --audit-level=high` passes again.
+
 ## [0.1.1] — 2026-05-09
 
 walgo-mcp went **public** on this day. Two security-hardening landings preceded the flip; both close attack vectors that per-IP rate limiting alone leaves open.
