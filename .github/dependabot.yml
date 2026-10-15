@@ -1,5 +1,8 @@
 version: 2
 updates:
+  # The root lockfile covers every workspace (packages/*, worker), so this one
+  # entry updates worker deps too. A separate "/worker" entry has no lockfile
+  # to update and produces PRs that fail `npm ci`.
   - package-ecosystem: npm
     directory: "/"
     schedule:
@@ -10,19 +13,6 @@ updates:
     groups:
       types:
         patterns: ["@types/*"]
-      mcp:
-        patterns: ["@modelcontextprotocol/*", "agents"]
-      tooling:
-        patterns: ["typescript", "vitest", "@vitest/*"]
-
-  - package-ecosystem: npm
-    directory: "/worker"
-    schedule:
-      interval: weekly
-      day: monday
-    open-pull-requests-limit: 5
-    labels: [dependencies, worker]
-    groups:
       cloudflare:
         patterns: ["@cloudflare/*", "wrangler"]
       mcp:
