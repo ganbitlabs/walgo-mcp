@@ -13,6 +13,6 @@ concurrency:
 
 jobs:
   elek:
-    uses: ganbitlabs/shared-workflows/.github/workflows/elek.yml@a7c6d429e30dce8dc18e2207babc19c4d7839c6a # v1.0.6
+    uses: ganbitlabs/shared-workflows/.github/workflows/elek.yml@3eb7bc6baab4aab47e312e0c0433316477f40eb1 # v1.0.7
     secrets:
       OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
