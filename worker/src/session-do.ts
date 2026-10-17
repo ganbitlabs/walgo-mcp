@@ -3,6 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import {
   BridgeError,
+  HEADERS_DESCRIPTION,
   type BridgeRequest,
   type BridgeResponse,
   type BrowserMessage,
@@ -156,7 +157,7 @@ export class SessionDO extends DurableObject<Env> {
       inputSchema: {},
     });
     this.registerProxy(server, "walgo_load_site", "load_site", {
-      description: "Load a deployed site's resources into the in-browser draft for editing (replaces current draft).",
+      description: "Load a deployed site's resources into the in-browser draft for editing (replaces current draft). Returns the file paths and the site's current custom headers.",
       inputSchema: { siteObjectId: text, network },
     });
     this.registerProxy(server, "walgo_deploy", "deploy", {
@@ -167,6 +168,7 @@ export class SessionDO extends DurableObject<Env> {
         siteName: text.optional(),
         metadata: z.record(z.string(), z.unknown()).optional(),
         routes: z.record(z.string(), text).optional(),
+        headers: z.record(text, z.record(text, text)).describe(HEADERS_DESCRIPTION).optional(),
         existingSiteObjectId: text.optional(),
       },
     });

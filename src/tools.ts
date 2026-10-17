@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { ZodRawShapeCompat } from "@modelcontextprotocol/sdk/server/zod-compat.js";
 import { z } from "zod";
-import { BridgeError, type RequestKind } from "./protocol.js";
+import { BridgeError, HEADERS_DESCRIPTION, type RequestKind } from "./protocol.js";
 import { errorResult, ok } from "./result.js";
 import type { Session } from "./session.js";
 import type { Bridge } from "./bridge.js";
@@ -20,8 +20,8 @@ const PROXY_TOOLS: ProxyToolDef[] = [
   { name: "walgo_delete_file", kind: "delete_file", description: "Delete a file from the in-browser draft.", inputSchema: { path: z.string() } },
   { name: "walgo_init_template", kind: "init_template", description: "Scaffold a new draft from a built-in template (replaces current draft).", inputSchema: { template: z.enum(["portfolio", "bio", "landing", "blank"]), siteName: z.string().optional() } },
   { name: "walgo_clear_draft", kind: "clear_draft", description: "Empty the in-browser draft.", inputSchema: {} },
-  { name: "walgo_load_site", kind: "load_site", description: "Load a deployed site's resources into the in-browser draft for editing (replaces current draft).", inputSchema: { siteObjectId: z.string(), network: z.enum(["mainnet", "testnet"]) } },
-  { name: "walgo_deploy", kind: "deploy", description: "Deploy the current in-browser draft to Walrus + Sui. The browser tab signs all transactions with the user's wallet.", inputSchema: { network: z.enum(["mainnet", "testnet"]), epochs: z.number().int().positive(), siteName: z.string().optional(), metadata: z.record(z.string(), z.unknown()).optional(), routes: z.record(z.string(), z.string()).optional(), existingSiteObjectId: z.string().optional() } },
+  { name: "walgo_load_site", kind: "load_site", description: "Load a deployed site's resources into the in-browser draft for editing (replaces current draft). Returns the file paths and the site's current custom headers.", inputSchema: { siteObjectId: z.string(), network: z.enum(["mainnet", "testnet"]) } },
+  { name: "walgo_deploy", kind: "deploy", description: "Deploy the current in-browser draft to Walrus + Sui. The browser tab signs all transactions with the user's wallet.", inputSchema: { network: z.enum(["mainnet", "testnet"]), epochs: z.number().int().positive(), siteName: z.string().optional(), metadata: z.record(z.string(), z.unknown()).optional(), routes: z.record(z.string(), z.string()).optional(), headers: z.record(z.string(), z.record(z.string(), z.string())).describe(HEADERS_DESCRIPTION).optional(), existingSiteObjectId: z.string().optional() } },
   { name: "walgo_list_sites", kind: "list_sites", description: "List sites owned by the connected wallet on the given network.", inputSchema: { network: z.enum(["mainnet", "testnet"]) } },
   { name: "walgo_list_suins", kind: "list_suins", description: "List SuiNS names owned by the connected wallet, with the site object id each name currently points to (or null if unset).", inputSchema: {} },
   { name: "walgo_resolve_suins", kind: "resolve_suins", description: "Look up which site object a SuiNS name currently points to (returns null if unset).", inputSchema: { name: z.string(), network: z.enum(["mainnet", "testnet"]).optional() } },
