@@ -6,7 +6,7 @@ All notable changes are documented here. Format follows [Keep a Changelog](https
 
 ### Added
 
-- **`walgo_deploy` takes `headers`.** An agent can set custom HTTP response headers per file, such as `{"/index.html": {"Cache-Control": "no-cache"}}`, the same table a site's `ws-resources.json` holds. Both transports accept the field and forward it to the paired tab unchanged; a malformed table is rejected before it reaches the browser. `HeaderTable` and `DeployParams` join `@walgo/mcp-protocol` and the skill documents the field. Needs a matching walgo-web build: an older tab ignores `headers`, so the deploy result echoes them once the tab applies them.
+- **`walgo_deploy` takes `headers`.** An agent can set custom HTTP response headers per file, such as `{"/index.html": {"Cache-Control": "no-cache"}}`, the same table a site's `ws-resources.json` holds. Both transports accept the field and forward it to the paired tab unchanged; a malformed table is rejected before it reaches the browser. `HeaderTable` and `DeployParams` join `@walgo/mcp-protocol` and the skill documents the field. `walgo_load_site` returns the site's current `headers` so an agent can edit them instead of replacing them blind. Needs a matching walgo-web build: an older tab ignores `headers`, so the deploy result echoes them once the tab applies them.
 
 ### Security
 

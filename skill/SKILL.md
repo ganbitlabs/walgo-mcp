@@ -51,7 +51,7 @@ On update, `epochs` is ignored — existing blob expiry is preserved. Use `walgo
 ```
 walgo_deploy { network, epochs, existingSiteObjectId?, headers: { "/index.html": { "Cache-Control": "no-cache" } } }
 ```
-`headers` maps an exact file path to `{ name: value }`. Paths are exact, with no patterns. A path you name gets exactly the headers you give it (a `Content-Type` there replaces the default), a path you leave out keeps its current headers, and `{}` clears a path's headers. For an existing site, `walgo_load_site` first so the draft holds every file. The user sees the headers in the approval dialog. The result echoes `headers` once the tab has applied them; if you sent `headers` and the result has none, the tab is on an old build, so ask the user to refresh `web.walgo.xyz` and deploy again.
+`headers` maps an exact file path to `{ name: value }`. Paths are exact, with no patterns. A path you name gets exactly the headers you give it, so it loses any current header you leave out (a `Content-Type` there replaces the default). A path you omit keeps its current headers, and `{}` clears a path's headers. To add one header to a file that has others, call `walgo_load_site` first: it returns the site's current `headers` and loads every file into the draft. Send the file's current headers plus the new one. The user's approval dialog lists the headers you set and the current headers the call removes. The result echoes `headers` once the tab has applied them; if you sent `headers` and the result has none, the tab is on an old build, so ask the user to refresh `web.walgo.xyz` and deploy again.
 
 **Link a SuiNS name:**
 ```
