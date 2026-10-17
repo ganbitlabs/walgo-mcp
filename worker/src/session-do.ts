@@ -3,6 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import {
   BridgeError,
+  HEADERS_DESCRIPTION,
   type BridgeRequest,
   type BridgeResponse,
   type BrowserMessage,
@@ -167,6 +168,7 @@ export class SessionDO extends DurableObject<Env> {
         siteName: text.optional(),
         metadata: z.record(z.string(), z.unknown()).optional(),
         routes: z.record(z.string(), text).optional(),
+        headers: z.record(text, z.record(text, text)).describe(HEADERS_DESCRIPTION).optional(),
         existingSiteObjectId: text.optional(),
       },
     });

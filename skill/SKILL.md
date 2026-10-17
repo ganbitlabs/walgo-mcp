@@ -47,6 +47,12 @@ walgo_deploy { network, epochs, existingSiteObjectId: <same id> }
 ```
 On update, `epochs` is ignored — existing blob expiry is preserved. Use `walgo_extend_epochs` to top up.
 
+**Set custom response headers (cache rules, security headers):**
+```
+walgo_deploy { network, epochs, existingSiteObjectId?, headers: { "/index.html": { "Cache-Control": "no-cache" } } }
+```
+`headers` maps an exact file path to `{ name: value }`. Paths are exact, with no patterns. A path you name gets exactly the headers you give it (a `Content-Type` there replaces the default), a path you leave out keeps its current headers, and `{}` clears a path's headers. For an existing site, `walgo_load_site` first so the draft holds every file. The user sees the headers in the approval dialog. The result echoes `headers` once the tab has applied them; if you sent `headers` and the result has none, the tab is on an old build, so ask the user to refresh `web.walgo.xyz` and deploy again.
+
 **Link a SuiNS name:**
 ```
 walgo_list_suins                                # see owned names + current targets
@@ -75,6 +81,7 @@ When calling `walgo_deploy`, the `metadata.creator` field must be `"Walgo"` (exa
 
 ## Error map
 
+- `invalid_args` → a parameter is malformed, such as a header name or value HTTP can't carry, or a `headers` path that isn't a file in the draft. The message says which. Fix the arguments and call again.
 - `not_paired` → re-run the pair flow above. Don't retry other tools first.
 - `wallet_rejected` → user cancelled in the wallet popup. Ask if they want to retry.
 - `disconnected` → browser tab closed or refreshed; pair again.

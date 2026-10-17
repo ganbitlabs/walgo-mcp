@@ -4,6 +4,10 @@ All notable changes are documented here. Format follows [Keep a Changelog](https
 
 ## [Unreleased]
 
+### Added
+
+- **`walgo_deploy` takes `headers`.** An agent can set custom HTTP response headers per file, such as `{"/index.html": {"Cache-Control": "no-cache"}}`, the same table a site's `ws-resources.json` holds. Both transports accept the field and forward it to the paired tab unchanged; a malformed table is rejected before it reaches the browser. `HeaderTable` and `DeployParams` join `@walgo/mcp-protocol` and the skill documents the field. Needs a matching walgo-web build: an older tab ignores `headers`, so the deploy result echoes them once the tab applies them.
+
 ### Security
 
 - **Dependency advisories cleared** ([#51](https://github.com/ganbitlabs/walgo-mcp/pull/51)). `@modelcontextprotocol/sdk` moves to `^1.32.1`, and a root `overrides` entry makes `agents@0.12.x` use it instead of its pinned 1.29.0. Transitive packages such as `ai`, `@babel/core`, `hono`, `ws`, and `proxy-addr` move to patched versions inside their existing ranges. `npm audit --omit=dev --audit-level=high` passes again.
