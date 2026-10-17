@@ -47,6 +47,12 @@ walgo_deploy { network, epochs, existingSiteObjectId: <same id> }
 ```
 On update, `epochs` is ignored — existing blob expiry is preserved. Use `walgo_extend_epochs` to top up.
 
+**Set custom response headers (cache rules, security headers):**
+```
+walgo_deploy { network, epochs, existingSiteObjectId?, headers: { "/index.html": { "Cache-Control": "no-cache" } } }
+```
+`headers` maps an exact file path to `{ name: value }`. Paths are exact, with no patterns. A path you name gets exactly the headers you give it, so it loses any current header you leave out (a `Content-Type` there replaces the default). A path you omit keeps its current headers. Mapping a path to `{}` clears that path's headers, but a whole `headers: {}` names no path and changes nothing. To add one header to a file that has others, call `walgo_load_site` first: it loads the site's files into the draft (a file whose blob can't be read is listed under `unreadable` and stays out) and returns the site's current `headers` (`null` when they could not be read). Send the file's current headers plus the new one. The user's approval dialog lists the headers you set and the current headers the call removes, and the deploy ships the draft as it stood when the user was asked, so don't edit files while a deploy is waiting. The result echoes `headers` once the tab has applied them; if you named at least one path and the result has no `headers`, the tab is on an old build, so ask the user to refresh `web.walgo.xyz` and deploy again.
+
 **Link a SuiNS name:**
 ```
 walgo_list_suins                                # see owned names + current targets
@@ -75,6 +81,7 @@ When calling `walgo_deploy`, the `metadata.creator` field must be `"Walgo"` (exa
 
 ## Error map
 
+- `invalid_args` → a parameter is malformed, such as a header name or value HTTP can't carry, or a `headers` path that isn't a file in the draft. The message says which. Fix the arguments and call again.
 - `not_paired` → re-run the pair flow above. Don't retry other tools first.
 - `wallet_rejected` → user cancelled in the wallet popup. Ask if they want to retry.
 - `disconnected` → browser tab closed or refreshed; pair again.

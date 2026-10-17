@@ -25,6 +25,30 @@ export type RequestKind =
   | "extend_epochs"
   | "link_suins";
 
+/**
+ * Custom HTTP response headers per exact file path, the shape of the `headers`
+ * table in a site's `ws-resources.json`:
+ * `{ "/index.html": { "Cache-Control": "no-cache" } }`.
+ */
+export type HeaderTable = Record<string, Record<string, string>>;
+
+export const HEADERS_DESCRIPTION = `Custom HTTP response headers per exact file path, e.g. {"/index.html": {"Cache-Control": "no-cache"}}. Replaces the headers of each file named; a file left out keeps its current headers. Map a path to {} to clear that file's headers. An empty table names no file and changes nothing.`;
+
+export interface DeployParams {
+  network: Network;
+  epochs: number;
+  siteName?: string;
+  metadata?: Record<string, unknown>;
+  routes?: Record<string, string>;
+  /**
+   * Replaces the headers of each file it names. A file it omits keeps the headers
+   * it has on chain. A file mapped to `{}` has its headers cleared. An empty table
+   * names no file and changes nothing.
+   */
+  headers?: HeaderTable;
+  existingSiteObjectId?: string;
+}
+
 export interface BridgeRequest {
   type: "request";
   id: string;
