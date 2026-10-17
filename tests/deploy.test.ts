@@ -97,6 +97,19 @@ describe("deploy", () => {
     expect(received).toEqual(params);
   });
 
+  it("tells an agent that {} clears one file's headers and an empty table changes nothing", async () => {
+    const mcp = await startMcpServer({ wsPort: 0 });
+    cleanup.push(() => mcp.close());
+    const client = await mcp.testClient();
+    cleanup.push(() => client.close());
+
+    const { tools } = await client.listTools();
+    const schema = tools.find((t) => t.name === "walgo_deploy")!.inputSchema as { properties: { headers: { description: string } } };
+
+    expect(schema.properties.headers.description).toMatch(/path to \{\} to clear/);
+    expect(schema.properties.headers.description).toMatch(/empty table[^.]*changes nothing/);
+  });
+
   it.each([
     ["a header value that is not a string", { "/index.html": { "Cache-Control": 5 } }],
     ["a path whose headers are not an object", { "/index.html": "no-cache" }],

@@ -32,7 +32,7 @@ export type RequestKind =
  */
 export type HeaderTable = Record<string, Record<string, string>>;
 
-export const HEADERS_DESCRIPTION = `Custom HTTP response headers per exact file path, e.g. {"/index.html": {"Cache-Control": "no-cache"}}. Replaces the headers of each file named; a file left out keeps its current headers, and {} clears a file's headers.`;
+export const HEADERS_DESCRIPTION = `Custom HTTP response headers per exact file path, e.g. {"/index.html": {"Cache-Control": "no-cache"}}. Replaces the headers of each file named; a file left out keeps its current headers. Map a path to {} to clear that file's headers. An empty table names no file and changes nothing.`;
 
 export interface DeployParams {
   network: Network;
@@ -42,7 +42,8 @@ export interface DeployParams {
   routes?: Record<string, string>;
   /**
    * Replaces the headers of each file it names. A file it omits keeps the headers
-   * it has on chain, and an empty object clears a file's headers.
+   * it has on chain. A file mapped to `{}` has its headers cleared. An empty table
+   * names no file and changes nothing.
    */
   headers?: HeaderTable;
   existingSiteObjectId?: string;
